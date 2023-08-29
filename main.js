@@ -9,6 +9,8 @@ class Field {
     constructor(field) {
         this.field = field;
         this.prompt = require('prompt-sync')({sigint: true});
+        this.dead = false; // determines if user falls off map or down a hole
+        this.foundHat = false; // determines if app should continue asking for user input
     }
 
     print() {
@@ -17,67 +19,67 @@ class Field {
         }
     }
 
-    directionXY(move) {
+    directionYX(move) {
         let xy = []
-        if (move === 'r'){
+        if (move === 'd'){
             return [1, 0]
         }
-        else if (move === 'l'){
+        else if (move === 'u'){
             return [-1, 0]
         }
-        else if (move === 'd'){
+        else if (move === 'r'){
             return [0, 1]
         }
-        else if (move === 'u'){
+        else if (move === 'l'){
             return [0, -1]
         }
         else return "That's not a valid move!"
     }
 
-    addXY(start, move) {
+    addYX(start, move) {
         let sum = [start[0]+move[0], start[1]+move[1]];
         return sum
     }
 
-    dead() {
+    fall() {
         console.log("You fell off the map, IDIOT!!!");
-        dead = true;
+        this.dead = true;
     }
 
     win() {
         console.log("Congrats, you found the hat!!!")
-        foundHat = true;
+        this.foundHat = true;
     }
 
 
     fieldRun() {
-        let foundHat = false; // determines if app should continue asking for user input
-        let dead = false; // determines if user falls off map or down a hole
+        // let foundHat = false; // determines if app should continue asking for user input
+        // let dead = false; // determines if user falls off map or down a hole
         let position = [0, 0]; // starting position of user
-        let fieldSize = [myField.field[0].length, myField.field.length] // determines the size of the field (x.length, y.length)
+        let fieldSize = [myField.field.length - 1, myField.field[0].length - 1] // determines the size of the field (x.length, y.length)
 
-        while (!foundHat || !dead) {
+        while (!this.foundHat & !this.dead) {
             // get user input
             let move = prompt('Which way?');
             // see where user moves
-            let moveXY = this.directionXY(move);
+            let moveYX = this.directionYX(move);
             // determine xy of new position
-            let newPosition = this.addXY(position, moveXY)
+            position = this.addYX(position, moveYX);
 
             // If user leaves the field (off sides or end) end game
-            if (newPosition[0] > fieldSize[0] || newPosition[1] > fieldSize[1]){
-                this.dead();
+            if (position[0] > fieldSize[0] || position[1] > fieldSize[1] || position[0] < 0 || position[1] < 0){
+                this.fall();
             }
             // If user falls in a hole end game
-            else if (this.field[newPosition[0]][newPosition[1]] === 'O'){
-                this.dead();
+            else if (this.field[position[0]][position[1]] === 'O'){
+                this.fall();
             }
             // If player finds hat, end game
-            else if (this.field[newPosition[0]][newPosition[1]] === '^'){
+            else if (this.field[position[0]][position[1]] === '^'){
                 this.win();
             }
             else {
-                this.field[newPosition[0]][newPosition[1]] = '*';
+                this.field[position[0]][position[1]] = '*';
                 this.print();
             }
             }
