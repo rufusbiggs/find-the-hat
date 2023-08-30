@@ -19,6 +19,11 @@ class Field {
         }
     }
 
+    print2(field){
+        for (let line in field){
+        console.log(field[line].join(''));
+    }}
+
     directionYX(move) {
         let xy = []
         if (move === 'd'){
@@ -51,6 +56,64 @@ class Field {
         this.foundHat = true;
     }
 
+    checkInput(input) {
+        if (input === 'r' || input === 'l' || input === 'd' || input === 'u'){
+            return true
+        }
+        else console.log("That's not a valid move!")
+    }
+
+    static fieldGenerator(){
+        // ask for dimensions of field
+        let y = prompt('Map height?');
+        let x = prompt('Map width?');
+
+        // ask for difficulty level
+        let difficulty = prompt('Difficulty low, med, hard?');
+
+        // set % of holes according to difficulty level selected
+        let probabilityOfHole = 0;
+        if (difficulty === 'low'){
+            probabilityOfHole = 1;
+        }
+        else if (difficulty === 'med'){
+            probabilityOfHole = 2;
+        }
+        else if (difficulty === 'hard'){
+            probabilityOfHole = 3;
+        }
+
+        // generate field of elements either space of hole
+        let generatedField = [];
+        for (let i = 0; i < y; i++){
+            // creates each row
+            let generatedList = []; 
+            for (let j = 0; j < x; j++){
+                let randomNum = Math.random() * 10;
+                if (randomNum < probabilityOfHole){
+                    generatedList.push(hole);
+                }
+                else generatedList.push(fieldCharacter);
+            }
+            // adds each row to the field
+            generatedField.push(generatedList);
+        }
+
+        // Add hat for finish (making sure the starting position index 0 is not used)
+        let randomHatIndex;
+        do {
+            randomHatIndex = Math.floor(Math.random() * x * y) - 1;
+        }
+        while (randomHatIndex === 0);
+        generatedField[randomHatIndex % x][Math.floor(randomHatIndex / x)] = hat;
+        
+        // Add starting point
+        generatedField[0][0] = pathCharacter;
+
+        return generatedField;
+
+    }
+    
 
     fieldRun() {
         // let foundHat = false; // determines if app should continue asking for user input
@@ -61,6 +124,11 @@ class Field {
         while (!this.foundHat & !this.dead) {
             // get user input
             let move = prompt('Which way?');
+            // check if the user inputs a valid move
+            let check = this.checkInput(move)
+            if (!check){
+                continue;
+            }
             // see where user moves
             let moveYX = this.directionYX(move);
             // determine xy of new position
@@ -82,19 +150,13 @@ class Field {
                 this.field[position[0]][position[1]] = '*';
                 this.print();
             }
-            }
-
         }
+
     }
+}
 
 
-const myField = new Field([
-    ['*', '░', 'O'],
-    ['░', 'O', '░'],
-    ['░', '^', '░'],
-    ['░', '░', '░'],
-  ]);
+const myField = new Field(Field.fieldGenerator());
 
 myField.print();
 myField.fieldRun();
-
